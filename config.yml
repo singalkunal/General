@@ -1,0 +1,34 @@
+# fusuma config file
+# must be placed ~/.config/fusuma/config.yml
+swipe:
+  3: 
+    left: 
+      command: 'xdotool key alt+Tab'
+    right: 
+      command: 'xdotool key alt+Shift+Tab'
+    up: 
+      command: 'xdotool key super'
+    down: 
+      command: 'xdotool key super'
+  4:
+    left: 
+      command: 'xdotool key super+d'
+    right: 
+      command: 'xdotool key super+d'
+    up: 
+      command: 'xdotool key ctrl+alt+Down'
+    down: 
+      command: 'xdotool key ctrl+alt+Up'
+pinch:
+  in:
+    command: 'xdotool key super'
+  out:
+     command: 'xdotool key super+a'
+
+threshold:
+  swipe: 0.4
+  pinch: 0.4
+
+interval:
+  swipe: 0.8
+  pinch: 0.1
