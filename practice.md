@@ -183,6 +183,60 @@
 
 </details> 
 
+### Graphs
+
+<details>
+<summary> Finding cycle in a <b>grid</b> </summary>
+
+    const int mxN=55;
+    string s[mxN];
+    bool vis[mxN][mxN];
+    int n, m;
+
+    bool dfs(int i, int j, int froi, int froj, char c) {
+        // cout<<i<<" "<<j<<endl;
+        if(min(i,j)<0 || i>=n || j>=m || s[i][j] != c) return 0;
+
+        if(vis[i][j]) return 1;
+
+        vis[i][j] = 1;
+
+        bool f = 0;
+        if(i+1^froi || j^froj)
+            f |= dfs(i+1, j, i, j, c);
+        if(i-1^froi || j^froj)
+            f |= dfs(i-1, j, i, j, c);
+        if(i^froi || j+1^froj)
+            f |= dfs(i, j+1, i, j, c);
+        
+        if(i^froi || j-1^froj)
+            f |= dfs(i, j-1, i, j, c);
+
+        return f;
+    }
+
+    void test_case() {
+        cin>>n>>m;
+
+        all(n) cin>>s[i];
+        memset(vis, 0, sizeof vis);
+
+        rep(i, 0, n-2) {
+            rep(j, 0, m-2) {
+                if(!vis[i][j])  {
+                    if(dfs(i, j, -1, -1, s[i][j])) {cout<<"Yes\n"; return;}
+                }
+            }
+        }
+
+
+        cout<<"No\n";
+
+    }
+
+</details>
+
+
 ### Advanced DS
 
 <details>
@@ -190,7 +244,7 @@
 
     // O(n*logn*logn)
     const int mxN = 1e6;
-    int bit[mxN+1];
+    int bit[mxN+1]; // 1-based indexing
 
     void update(int idx, int delta) {
         while(idx<=mxN) {
@@ -397,6 +451,54 @@
         }
 
         return res;
+    }
+
+    // special case -> if sequence have only max 2 distinct kind of characters then nCr can be used
+    // calculate curr (See below problem)
+
+<a href="https://leetcode.com/problems/kth-smallest-instructions/submissions/"> LC </a>
+
+</details>
+
+<details>
+<summary>  <a href="https://onlinejudge.org/index.php?option=onlinejudge&Itemid=99999999&page=show_problem&category=0&problem=1266&mosmsg=Submission+received+with+ID+25695859"> UVa </a> Find number of integers [1, N] divisible by atleast one of the given M integers <b> Inclusion Exclusion </b> </summary>
+
+
+<a href="https://cp-algorithms.com/combinatorics/inclusion-exclusion.html"> Explanation </a>
+
+    ll n, m;
+
+    void go() {
+        vll a;
+        all(m) {
+            ll x;
+            scanf("%lld", &x);
+            if(x == 1) m--;
+            else a.pb(x);
+        }
+
+        ll res = 0;
+        for(int mask=1; mask < (1<<m); mask++) {
+            ll lcm = 1, bits=0;
+            all(m) {
+                if(mask & (1<<i)) {
+                    bits++;
+                    lcm = lcm*a[i] / __gcd(lcm, a[i]);
+                }
+            }
+
+            if(bits&1) res += (n/lcm);
+            else res -= (n/lcm);
+            // printf("%d %lld %lld\n", mask, bits, (n/lcm));
+        }
+
+        printf("%lld\n", n-res);
+    }
+
+    int main(){
+        FIO;
+
+        while(scanf("%lld%lld", &n, &m) == 2) go();
     }
 
 </details>
