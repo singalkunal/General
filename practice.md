@@ -113,6 +113,102 @@
 
 </details>
 
+### DP
+
+<details>
+<summary> <a href="https://codingcompetitions.withgoogle.com/kickstart/round/000000000019ff49/000000000043b0c6"> KS </a> <a href="https://codeforces.com/blog/entry/53960"><b>(Digit DP)</b> </a> Numbers in given range [l, r] having odd digit at odd positions and even at even. pos(msb)=1 </summary>
+
+    ll d[20], dp[20][2];
+    int sz;
+
+    ll rec(string& r, int pos, bool less) {
+        if(pos >= sz) return 1;
+        ll &ans = dp[pos][less];
+
+        if(ans != -1) return ans;
+        ll res = 0;
+
+        int hi = 9, c = r[pos]-'0';
+        if(!less) hi = c;
+        rep(i, 0, hi) if(pos%2 != i%2) res += rec(r, pos+1, less | (i < c));
+     
+        return ans = res;
+    }
+
+    ll calc(string& r) {
+        memset(dp, -1, sizeof dp);
+        sz = r.size();
+        ll res = 0;
+        rep(i, 1, sz-1) res += d[i];
+        return res + rec(r, 0, 0);
+
+    }
+
+    void go() {
+        ll x, y;
+        cin>>x>>y;
+        string l, r;
+        x--;
+        l = to_string(x);
+        r = to_string(y);
+
+
+
+        cout<<calc(r)-calc(l)<<"\n";
+
+    }
+
+    int main(){
+        FIO;
+
+        memset(d, 0, sizeof d);
+        d[0] = 1;
+        for(ll i=1; i<=18; i++) {
+            d[i] = 5 * d[i-1];
+        }
+
+        int t;
+        cin>>t;
+        all(t) {
+            cout<<"Case #"<<i+1<<": ";
+            go();
+        }
+    }
+</details>
+
+<details>
+<summary> <a href="https://codeforces.com/contest/505/problem/C"> CF </a> (<b> DP optimisation </b>) Like Frog Jump. jump allowed -> prev-1, prev, prev+1. Collect max gems </summary>
+
+    const int nax=30001;
+    ll dp[nax][600], gems[nax];
+    int d, OFFSET;
+     
+    ll rec(int pos, int jmp) {
+        // cout<<pos<<" "<<jmp<<"\n";
+        if(pos>=nax || jmp<=0) return 0;
+        ll &ans = dp[pos][jmp-OFFSET];
+        if(ans != -1) return ans;
+        return ans = gems[pos] + max({rec(pos+jmp-1, jmp-1), rec(pos+jmp, jmp), rec(pos+jmp+1, jmp+1)});
+    }
+     
+    int main(){
+        FIO;
+        memset(gems, 0, sizeof gems);
+     
+        int n,p;
+        cin>>n>>d;
+        OFFSET = max(0, d-250);
+        all(n) cin>>p, gems[p]++;
+     
+        memset(dp, -1, sizeof dp);
+        cout<<rec(d, d)<<"\n";
+     
+    }
+
+</details>
+
+
+
 ### Sliding Window
 
 <details>
@@ -236,6 +332,95 @@
 
 </details>
 
+<details>
+<summary> <a href-"https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3138"> UVA </a> Extra operation in Union-Find => 2 p q Move p to the set containing q </summary>
+
+    /*****
+    * set{u} represent set containing u
+    * parent array will be 2*n
+    * root element of a set will always be [n+1, 2*n] so we don't have to check if curr element is root or not and operatons becomes:
+    * union(u, v) ->(Move whole set u) -> connect set{u} and set{v} => par[root(set{u})] = root(set{v})
+    * move(u, v) -> (Move only u) -> connect u to set{v} => par[u] = root(set{v})
+    *****/
+
+    const int nax=2e5+5;
+    int par[nax];
+    ll sz[nax], sm[nax];
+    int n;
+
+
+    void init(int n) {
+        rep(i, 1, n) {
+            par[i] = par[i+n] = i+n;
+            sz[i+n] = 1;
+            sm[i+n] = i;
+        }
+    }
+    int f(int u) {
+        if(u == par[u]) return u;
+        return par[u] = f(par[u]);
+    }
+
+    void un(int u, int v) {
+        u = f(u);
+        v = f(v);
+
+        // printf("un %d %d\n", u, v);
+        if(u != v) {
+            if(sz[v] > sz[u]) swap(u, v);
+            par[v] = u;
+            sz[u] += sz[v];
+            sm[u] += sm[v];
+        }
+    }
+
+    void move(int u, int v) {
+        int pu = f(u);
+        v = f(v);
+
+        if(pu != v)  {
+            sz[pu]--;
+            sm[pu] -= u;
+
+            sz[v]++;
+            sm[v] += u;
+
+            par[u] = v;
+
+        }
+
+    }
+
+    void trace() {
+        printf("---------\npar: ");
+        rep(j, 1, 2*n) printf("%d ", par[j]);
+        printf("\n*********\n");
+    }
+
+    int main(){
+        FIO;
+
+        int t,m,p,q;
+
+        while(cin>>n>>t) {
+            init(n);
+            all(t) {
+                // trace();
+                cin>>m>>p;
+                if(m == 3) {
+                    p = f(p);
+                    printf("%lld %lld\n", sz[p], sm[p]);
+                }
+                else {
+                    cin>>q;
+                    if(m == 1) un(p, q);
+                    else move(p, q);
+                }
+            }
+        }
+    }
+</details>
+
 
 ### Advanced DS
 
@@ -296,7 +481,6 @@
 
 </details>
 
-
 ### General
 
 <details>
@@ -342,6 +526,7 @@
     }
 
 </details>
+
 
 <details>
 <summary> Prime Factorization O(sqrt(n)) </summary>
