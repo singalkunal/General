@@ -208,6 +208,41 @@
 </details>
 
 
+<details>
+<summary> We are given the prices of k products over n days, and we want to buy each product exactly once. However, we are allowed to buy at most one product in a day. What is the minimum total price? </summary>
+
+    void test_case() {
+        const int INF=1e6;
+        int n, k;   // n-> #days, k-> #products
+        cin>>n>>k;
+        int prices[k][n];
+        int dp[1<<k][n];
+        for(int i=0; i<k; i++) {
+            for(int j=0; j<n; j++) cin>>prices[i][j];
+        }
+
+
+        memset(dp, 0, sizeof dp);
+        for(int i=1; i<(1<<k); i++) {
+            for(int j=0; j<n; j++) dp[i][j] = INF;
+        }
+
+        for(int x=0; x<k; x++) dp[1<<x][0] = prices[x][0];
+
+        for(int i=0; i<(1<<k); i++) {
+            for(int j=1; j<n; j++) {
+                dp[i][j] = dp[i][j-1];
+                for(int x=0; x<k; x++) {
+                    if(i&(1<<x))
+                        dp[i][j] = min(dp[i][j], dp[i^(1<<x)][j-1]+prices[x][j]);
+                }
+            }
+        }
+
+        cout<<dp[(1<<k)-1][n-1]<<"\n";
+    }
+
+</details>
 
 ### Sliding Window
 
@@ -333,7 +368,7 @@
 </details>
 
 <details>
-<summary> <a href-"https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3138"> UVA </a> Extra operation in Union-Find => 2 p q Move p to the set containing q </summary>
+<summary> <a href="https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&page=show_problem&problem=3138"> UVA </a> Extra operation in Union-Find => 2 p q Move p to the set containing q </summary>
 
     /*****
     * set{u} represent set containing u
@@ -421,6 +456,70 @@
     }
 </details>
 
+<details>
+<summary> <a href="https://www.spoj.com/problems/QUEEN/"> SPOJ </a> In a grid min steps to move from F to S. Moves allowed -> chess queen </summary>
+
+    const int nax=1005;
+    string gr[nax];
+    int n, m;
+     
+    int dx[]={-1,-1,-1,0,0,1,1,1};
+    int dy[]={-1,0,1,-1,1,-1,0,1};
+     
+    int main(){
+        FIO;
+     
+        int t; cin>>t;
+        while(t--) {
+            cin>>n>>m;
+            all(n+2) gr[i] = string(nax, 'X');
+            int si,sj,ti,tj;
+            rep(i, 1, n) {
+                rep(j, 1, m) {
+                    cin>>gr[i][j];
+                    if(gr[i][j] == 'F') si=i, sj=j;
+                    if(gr[i][j] == 'S') ti=i, tj=j;
+                }
+            }
+     
+            int dist[n+1][m+1];
+            memset(dist, -1, sizeof dist);
+            dist[si][sj] = 0;
+     
+            queue<pii> qu; 
+            qu.push({si, sj});
+     
+            // bfs -> 1 move away -> 2 moves away -> 3 moves away........
+            while(!qu.empty()) {
+                int i=qu.front().F, j=qu.front().S;
+                qu.pop();
+                if(i==ti && j==tj) break;
+     
+                for(int k=0; k<8; k++) {
+                    int x=i+dx[k], y=j+dy[k];
+     
+                    while(gr[x][y] != 'X') {
+                        // At any point of time dist[x][y] can only be <= 1+dist[i][j] if
+                        // x,y is already visited
+                        if(dist[x][y] == -1) {
+                            // case 1: (x,y) -> not visited yet
+                            dist[x][y] = 1+dist[i][j];
+                            qu.push({x,y});
+                        }
+                        else if(dist[x][y] < 1+dist[i][j]) break; // case 2: (x,y) is already in queue for lesser dist
+                        // we will just continue in case dist[x][y] == 1+dist[i][j]
+     
+                        x += dx[k], y += dy[k];
+                    }
+                }
+            }
+     
+            if(dist[ti][tj] >= 0) cout<<dist[ti][tj]<<"\n";
+            else cout<<"-1\n";
+        }
+    }
+
+</details>
 
 ### Advanced DS
 
@@ -686,4 +785,30 @@
         while(scanf("%lld%lld", &n, &m) == 2) go();
     }
 
+</details>
+
+<details> 
+<summary> a+b = (a xor b) + 2*(a and b) </summary>
+
+    Think of a+b = (a XOR b) + (a AND b)*2 as exactly what happen when you do binary addition. From your example, a = 010 and b = 111:
+
+     010
+     111
+     ---
+    1001 = 101 + 100
+    For each bit, you add bits from a and b (0+0=0, 0+1=1, 1+0=1, 1+1=0, which is exactly a XOR b plus the carry-in bit from the previous addition, i.e. if both previous bits for a and b are 1, then we add it also. This is exactly (a AND b)*2. (Remember that multiplication by 2 is a shift left.)
+
+    With that equation we can calculate a AND b.
+
+    Now to count the number you want, we look at each bits of a XOR b and a AND b one-by-one and multiply all possibilities. (Let me write a[i] for the i-th bit of a)
+
+    If a[i] XOR b[i] = 0 and a[i] AND b[i] = 0, then a[i] = b[i] = 0. Only one possibility for this bit.
+
+    If a[i] XOR b[i] = 0 and a[i] AND b[i] = 1, then a[i] = b[i] = 1. Only one possibility for this bit.
+
+    If a[i] XOR b[i] = 1 and a[i] AND b[i] = 0, then a[i] = 1 and b[i] = 0 or vice versa. Two possibilities.
+
+    It's not possible to have a[i] XOR b[i] = 1 and a[i] AND b[i] = 1.
+
+    From your example, a XOR b = 101 and a AND b = 010. We have the answer 2*1*2 = 4.
 </details>
