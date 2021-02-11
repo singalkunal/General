@@ -13,7 +13,7 @@ Plugin 'VundleVim/Vundle.vim'
 " Plugin 'vim-syntastic/syntastic'
 Plugin 'ycm-core/YouCompleteMe'
 " Plugin 'artur-shaik/vim-javacomplete2'
-Plugin 'nvie/vim-flake8'
+" Plugin 'nvie/vim-flake8'
 " Plugin 'davidhalter/jedi-vim'
 "Plugin 'vim-airline/vim-airline'
 
@@ -52,78 +52,32 @@ syntax on
 set number relativenumber   " hybrid
 " highlight matching braces
 set showmatch
+" set increamental search
+set is
 
-
-inoremap {      {}<Left>
+function! ConditionalPairMap(open, close)
+  let line = getline('.')
+  let col = col('.')
+  if col < col('$') || stridx(line, a:close, col + 1) != -1
+    return a:open
+  else
+    return a:open . a:close . repeat("\<left>", len(a:close))
+  endif
+endf
+inoremap <expr> ( ConditionalPairMap('(', ')')
+inoremap <expr> )  strpart(getline('.'), col('.')-1, 1) == ")" ? "\<Right>" : ")"
+inoremap <expr> [ ConditionalPairMap('[', ']')
+inoremap <expr> ]  strpart(getline('.'), col('.')-1, 1) == "]" ? "\<Right>" : "]"
+inoremap <expr> { ConditionalPairMap('{', '}')
 inoremap {<CR>  {<CR>}<Esc>O
-inoremap {{     {
 inoremap {}     {}
-
-"inoremap        (  ()<Left>
-"inoremap <expr> )  strpart(getline('.'), col('.')-1, 1) == ")" ? "\<Right>" : ")"
-
-"inoremap <expr> ' strpart(getline('.'), col('.')-1, 1) == "\'" ? "\<Right>" : "\'\'\<Left>"
-
-"function! ConditionalPairMap(open, close)
-"  let line = getline('.')
-"  let col = col('.')
-"  if col < col('$') || stridx(line, a:close, col + 1) != -1
-"    return a:open
-"  else
-"    return a:open . a:close . repeat("\<left>", len(a:close))
-"  endif
-"endf
-"inoremap <expr> ( ConditionalPairMap('(', ')')
-"inoremap <expr> { ConditionalPairMap('{', '}')
-"inoremap <expr> [ ConditionalPairMap('[', ']')
-
-
-inoremap ( ()<Esc>i
-inoremap [ []<Esc>i
-""inoremap { {<CR>}<Esc>O
-autocmd Syntax html,vim inoremap < <lt>><Esc>i| inoremap > <c-r>=ClosePair('>')<CR>
-inoremap ) <c-r>=ClosePair(')')<CR>
-inoremap ] <c-r>=ClosePair(']')<CR>
-inoremap } <c-r>=CloseBracket()<CR>
-inoremap " <c-r>=QuoteDelim('"')<CR>
-inoremap ' <c-r>=QuoteDelim("'")<CR>
-
-function ClosePair(char)
- if getline('.')[col('.') - 1] == a:char
- return "\<Right>"
- else
- return a:char
- endif
-endf
-
-function CloseBracket()
- if match(getline(line('.') + 1), '\s*}') < 0
- return "\<CR>}"
- else
- return "\<Esc>j0f}a"
- endif
-endf
-
-function QuoteDelim(char)
- let line = getline('.')
- let col = col('.')
- if line[col - 2] == "\\"
- "Inserting a quoted quotation mark into the string
- return a:char
- elseif line[col - 1] == a:char
- "Escaping out of the string
- return "\<Right>"
- else
- "Starting a string
- return a:char.a:char."\<Esc>i"
- endif
-endf
 
 inoremap <c-a> <Esc>ggVG<CR>
 
 vnoremap ( <Esc>`>a)<Esc>`<i(<Esc>
 vnoremap ' <Esc>`>a'<Esc>`<i'<Esc>
 vnoremap " <Esc>`>a"<Esc>`<i"<Esc>
+vnoremap [ <Esc>`>a]<Esc>`<i[<Esc>
 "copy pasting with indent on
 " noremap p ]p
 
@@ -194,3 +148,27 @@ endfunction
 
 nnoremap cc :call ToggleComment()<cr>
 vnoremap cc :call ToggleComment()<cr>
+
+" StatusLine
+set laststatus=2
+set statusline=%1*
+set statusline+=\ \ %m\ \ 
+set statusline+=%*
+set statusline+=\ %<%F\ 
+set statusline+=\ %y
+set statusline+=%=
+set statusline+=%#CursorColumn#
+" set statusline+=\[%{&fileformat}\]
+set statusline+=%4*
+set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
+set statusline+=\ line:%l/%L,\ col:%-2c
+set statusline+=\ %p%%
+set statusline+=\ \ \ 
+set statusline+=%1*
+
+set background=dark
+if &background ==# 'dark'
+    colorscheme monokai
+else
+    colorscheme default
+end
